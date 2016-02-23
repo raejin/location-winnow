@@ -25,13 +25,17 @@ Location = Backbone.Model.extend({
     getId: function() {
         return this.get('id');
     },
-    
+
     getShow: function() {
         return this.get('show');
     },
 
     setShow: function(show) {
         this.set('show', show);
+    },
+
+    getNearbyLocations: function () {
+      return $.get('locations/', { nearby: true, location_id: this.get('id') });
     }
 });
 
@@ -57,7 +61,7 @@ Locations = Backbone.Collection.extend({
     /**
      * When a model's selected value changes, makes sure that
      * we only have one selected model
-     * 
+     *
      * TODO: Previously selected one is still in collection
      *
      * @param {Location} model - changed Location model
@@ -69,9 +73,9 @@ Locations = Backbone.Collection.extend({
         var self = this;
         if(val) {
             self.user.setLocationId(model.getId());
-            _.each(self.without(model), function(m) {
-                m.setSelected(false);
-            });
+            // _.each(self.without(model), function(m) {
+            //     m.setSelected(false);
+            // });
 
             // Keeps the selected one on top always
             self.sort();
@@ -98,11 +102,12 @@ Locations = Backbone.Collection.extend({
 User = Backbone.Model.extend({
     urlRoot: '/users',
     defaults: {
-        'location_id': null
+        'location_id': []
     },
 
     setLocationId: function(location_id) {
-        this.set('location_id', location_id);
+
+        this.set('location_id', (this.get('location_id') || []).concat(location_id));
         this.save({ patch: true });
     },
 

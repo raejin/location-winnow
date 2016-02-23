@@ -5,7 +5,7 @@ LocationView = Backbone.Marionette.ItemView.extend({
     template: '#location-template',
     className: 'location-entry',
     model: Location,
-    
+
     ui: {
         'selectedButton': 'button'
     },
@@ -13,7 +13,7 @@ LocationView = Backbone.Marionette.ItemView.extend({
     events: {
         'click @ui.selectedButton': 'setSelected'
     },
-    
+
     modelEvents: {
         'change:selected': 'renderButton',
         'change:show': 'showItem'
@@ -30,6 +30,12 @@ LocationView = Backbone.Marionette.ItemView.extend({
 
     setSelected: function() {
         this.model.setSelected(true);
+        var currentView = locationsLayout.getRegions('locationsList').locationsList.currentView;
+        var selected = currentView.collection.findWhere({ selected: true });
+        currentView.collection.set(selected);
+        this.model.getNearbyLocations().then(function (result) {
+          currentView.collection.add(result);
+        });
     },
 
     /**
@@ -71,7 +77,7 @@ LocationsLayout = Backbone.Marionette.LayoutView.extend({
     regions: {
         'locationsList': '#locations-container'
     },
-    
+
     ui: {
         'searchBox': '#store-search'
     },

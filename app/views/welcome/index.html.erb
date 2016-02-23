@@ -1,56 +1,73 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<script type="text/jsx">
+  var SearchBox = React.createClass({
+    getInitialState: function () {
+      return {
+        text: ''
+      };
+    },
+    handleInputChange: function (event) {
+      this.setState({
+        text: event.target.value
+      })
+    },
+    handleSearch: function () {
+      $.ajax({
+          url: '/locations',
+          data: {query: this.state.text}
+      }).then(function (result) {
+        console.log(result);
+        this.props.resolveSearchResult(result);
+      }.bind(this));
+    },
+    render: function() {
+      return <div className="col-md-6">
+        <input type="text" className="form-control" value={this.state.text} onChange={this.handleInputChange}/>
+        <button type="submit" className="btn btn-default" onClick={this.handleSearch}>Search Locations!</button>
+      </div>;
+    }
+  });
 
-  <!-- Basic Page Needs
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <meta charset="utf-8">
-  <title>Pick a location!</title>
-  <meta name="author" content="Daniel Guilak">
+  var LocationItem = React.createClass({
 
-  <!-- Mobile Specific Metas
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    render: function () {
+      return <div>{this.props.data.search_str}</div>
+    }
+  });
 
-  <!-- FONT
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <link href='//fonts.googleapis.com/css?family=Raleway:400,300,600' rel='stylesheet' type='text/css'>
+  var App = React.createClass({
+    getInitialState: function () {
+      return {
+        locations: []
+      };
+    },
+    resolveSearchResult: function (locations) {
+      this.setState({
+        locations: locations
+      });
+    },
 
-  <!-- CSS
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <%= stylesheet_link_tag "normalize", "skeleton" %>
-
-</head>
-<body>
-
-  <!-- Primary Page Layout
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <div class="container">
-    <div class="row">
-      <div class="eleven columns" style="margin-top: 25%">
-          <h4>Welcome, <%= @user.name %>!</h4>
-          <h5>Pick your store so we can help you hire:</h5>
-          <div id='locations-region'>
-              <input type="text" class="u-full-width" placeholder="Store or location ..." id="store-search"></textarea>
-              <div id='locations-container'></div>
+    render: function () {
+      return <div>
+        <div className="row">
+          <div className="col-md-8">
+            <h1>Welcome to signup for your store locations!</h1>
+            <SearchBox resolveSearchResult={this.resolveSearchResult} />
           </div>
-      </div>
-    </div>
-  </div>
+        </div>
+        <div className="row">
+          <div className="col-md-8">
+            {this.state.locations.map(function (location) {
+              return <LocationItem key={location.id} data={location} />;
+            })}
+          </div>
+        </div>
+      </div>;
+    }
+  });
 
-<script type="text/template" id="location-template">
-    <!-- Have to escape otherwise it thinks it's ERB -->
-    <%%= search_str %>
-    <!-- Having issues with underscore templates, would usually render text here -->
-    <button></button>
+  ReactDOM.render(
+    <App />,
+    document.getElementById('container')
+  );
 </script>
-
-<%= javascript_tag do %>
-    var bootstrappedLocation = <%= @location ? @location : 'null' %>;
-    var bootstrappedUser = <%= @user.to_json.html_safe %>;
-<% end %>
-
-<!-- End Document
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-</body>
-</html>
+<div id="container"></div>

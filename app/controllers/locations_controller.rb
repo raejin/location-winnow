@@ -6,6 +6,10 @@ class LocationsController < ApplicationController
             @locations = Location.all
         end
 
+        if params[:nearby] && params[:location_id]
+            @locations = Location.find(params[:location_id]).nearby_locations
+        end
+
         render json: @locations
     end
 
